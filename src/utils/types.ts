@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 export interface SalesData {
   name: string;
   sales: number;
@@ -82,16 +84,39 @@ export type FileDownProps = {
     className: string;
 }
 
-export type PaymentMethod = {
-  type: string;
-  number: string;
-  expiryDate: string;
-  holderName: string;
-  isDefault: boolean;
+export type PaymentMethodCardProps = {
+    type: string;
+    selected: boolean;
+}
+export interface Payment {
+  id: string;
+  customer: string;
+  amount: string;
+  date: string;
+  status: 'Completed' | 'Pending' | 'Failed';
+}
+export interface PaymentMethod {
+  name: string;
+  percentage: number;
+  icon: React.ReactNode;
+}
+export interface PaymentSummaryCardProps {
+  title: string;
+  value: string;
+  change: number;
+  icon: React.ReactNode;
+  bgColor: string;
 }
 
-export type PaymentMethodCardProps = {
-    method: PaymentMethod;
-    onSetDefault: () => void;
-    onRemove: () => void;
+export type RoleOptionProps = {
+  role: string;
+  description: string;
+  onClick: () => void;
+  icon: ReactNode;
+}
+
+export type AccountInfoProps = {
+  role: string;
+  username: string;
+  password: string;
 }
