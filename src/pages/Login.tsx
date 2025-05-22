@@ -1,17 +1,18 @@
-// src/components/login/LoginPage.tsx
-import { useState } from "react";
-import {  ChevronDown, Eye, EyeOff, Lock, LogIn, 
-  Shield, ShoppingBag, User, Users
+import {
+  ChevronDown,
+  Eye,
+  EyeOff,
+  Lock,
+  LogIn,
+  Shield,
+  ShoppingBag,
+  User,
+  Users,
 } from "lucide-react";
-import { ThemeToggle } from "../components/ThemeToggle";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import type { AccountInfoProps, RoleOptionProps } from "../utils/types";
-
-// Fixed account credentials
-const accounts = {
-  admin: { username: "admin", password: "admin123", role: "admin" },
-  manager: { username: "manager", password: "manager123", role: "manager" },
-  staff: { username: "staff", password: "staff123", role: "staff" }
-};
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -22,6 +23,9 @@ const LoginPage = () => {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  const { login } = useAuth();
+  const navigate = useNavigate();
+
   const toggleDropdown = () => {
     setDropdownOpen(!dropdownOpen);
   };
@@ -29,9 +33,7 @@ const LoginPage = () => {
   const selectRole = (role: string) => {
     setSelectedRole(role);
     setDropdownOpen(false);
-
-    // Pre-fill username based on selected role
-    setUsername(accounts[role.toLowerCase() as keyof typeof accounts]?.username || "");
+    setUsername(role.toLowerCase());
   };
 
   const handleLogin = () => {
@@ -40,20 +42,16 @@ const LoginPage = () => {
 
     // Simulate API call
     setTimeout(() => {
-      const roleKey = selectedRole.toLowerCase() as keyof typeof accounts;
-      const account = accounts[roleKey];
-      
-      if (!account) {
+      if (!selectedRole) {
         setError("Please select a role");
         setIsLoading(false);
         return;
       }
 
-      if (username === account.username && password === account.password) {
-        // Successful login - in a real app, you would redirect to dashboard
-        // and store authentication state
-        alert(`Successfully logged in as ${selectedRole}`);
-        // window.location.href = "/dashboard";
+      const success = login(username, password, selectedRole);
+
+      if (success) {
+        navigate("/dashboard");
       } else {
         setError("Invalid username or password");
       }
@@ -75,73 +73,79 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#EEF0F2] dark:bg-gray-900 flex flex-col justify-center items-center p-4 transition-colors duration-200">
+    <div className="min-h-screen bg-white flex flex-col justify-center items-center p-4 transition-colors duration-200">
       <div className="max-w-md w-full">
-        {/* Theme Toggle - Top Right */}
-        <div className="absolute top-4 right-4">
-          <ThemeToggle />
-        </div>
-        
         {/* Logo and Branding */}
         <div className="text-center mb-8">
           <div className="flex justify-center items-center mb-4">
-            <div className="bg-[#0D21A1] p-3 rounded-lg">
+            <div className="bg-[#0D21A1] p-3 rounded-xl shadow-lg">
               <ShoppingBag size={32} className="text-white" />
             </div>
           </div>
-          <h1 className="text-3xl font-bold text-[#141414] dark:text-white">ShopDash</h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-2">E-Commerce Admin Platform</p>
+          <h1 className="text-3xl font-bold text-[#141414]">ShopDash</h1>
+          <p className="text-[#808080] mt-2">E-Commerce Admin Platform</p>
         </div>
 
         {/* Login Card */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-8 transition-colors duration-200">
-          <h2 className="text-2xl font-bold text-center mb-6 text-[#141414] dark:text-white">Welcome Back</h2>
-          
+        <div className="bg-[#EEF0F2] rounded-2xl shadow-xl border border-gray-100 p-8 transition-colors duration-200">
+          <h2 className="text-2xl font-bold text-center mb-6 text-[#141414]">
+            Welcome Back
+          </h2>
+
           {error && (
-            <div className="bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 p-3 rounded-lg mb-4 text-sm">
+            <div className="bg-red-50 text-red-600 p-3 rounded-xl mb-4 text-sm border border-red-200">
               {error}
             </div>
           )}
-          
+
           <div>
             {/* Role Selection */}
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-[#141414] mb-2">
                 Select Role
               </label>
               <div className="relative">
                 <button
                   type="button"
-                  className="w-full bg-[#EEF0F2] dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-4 py-3 text-left flex justify-between items-center focus:outline-none focus:ring-2 focus:ring-[#0D21A1] focus:border-transparent"
+                  className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-left flex justify-between items-center focus:outline-none focus:ring-2 focus:ring-[#0D21A1] focus:border-transparent shadow-sm hover:shadow-md transition-shadow"
                   onClick={toggleDropdown}
                 >
                   {selectedRole ? (
                     <div className="flex items-center">
-                      <span className="mr-2">{getRoleIcon(selectedRole)}</span>
-                      <span className="dark:text-white">{selectedRole}</span>
+                      <span className="mr-2 text-[#0D21A1]">
+                        {getRoleIcon(selectedRole)}
+                      </span>
+                      <span className="text-[#141414] font-medium">
+                        {selectedRole}
+                      </span>
                     </div>
                   ) : (
-                    <span className="text-gray-500 dark:text-gray-400">Choose your role</span>
+                    <span className="text-[#808080]">Choose your role</span>
                   )}
-                  <ChevronDown size={20} className={`transition-transform dark:text-gray-400 ${dropdownOpen ? "transform rotate-180" : ""}`} />
+                  <ChevronDown
+                    size={20}
+                    className={`transition-transform text-[#808080] ${
+                      dropdownOpen ? "transform rotate-180" : ""
+                    }`}
+                  />
                 </button>
-                
+
                 {dropdownOpen && (
-                  <div className="absolute w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-10">
-                    <RoleOption 
-                      role="Admin" 
+                  <div className="absolute w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-10 overflow-hidden">
+                    <RoleOption
+                      role="Admin"
                       description="Full access to all features"
                       icon={<Shield size={18} className="text-[#0D21A1]" />}
                       onClick={() => selectRole("Admin")}
                     />
-                    <RoleOption 
-                      role="Manager" 
+                    <RoleOption
+                      role="Manager"
                       description="Manage orders and products"
                       icon={<Users size={18} className="text-[#0D21A1]" />}
                       onClick={() => selectRole("Manager")}
                     />
-                    <RoleOption 
-                      role="Staff" 
+                    <RoleOption
+                      role="Staff"
                       description="View and update orders"
                       icon={<User size={18} className="text-[#0D21A1]" />}
                       onClick={() => selectRole("Staff")}
@@ -150,67 +154,67 @@ const LoginPage = () => {
                 )}
               </div>
             </div>
-            
+
             {/* Username Field */}
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-[#141414] mb-2">
                 Username
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <User size={18} className="text-gray-400" />
+                  <User size={18} className="text-[#808080]" />
                 </div>
                 <input
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="bg-[#EEF0F2] dark:bg-gray-700 text-[#141414] dark:text-white w-full pl-10 pr-4 py-3 rounded-lg border border-gray-200 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-[#0D21A1] focus:border-transparent"
+                  className="bg-white text-[#141414] w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#0D21A1] focus:border-transparent shadow-sm hover:shadow-md transition-shadow"
                   placeholder="Enter your username"
                 />
               </div>
             </div>
-            
+
             {/* Password Field */}
             <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-[#141414] mb-2">
                 Password
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock size={18} className="text-gray-400" />
+                  <Lock size={18} className="text-[#808080]" />
                 </div>
                 <input
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="bg-[#EEF0F2] dark:bg-gray-700 text-[#141414] dark:text-white w-full pl-10 pr-10 py-3 rounded-lg border border-gray-200 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-[#0D21A1] focus:border-transparent"
+                  className="bg-white text-[#141414] w-full pl-10 pr-10 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#0D21A1] focus:border-transparent shadow-sm hover:shadow-md transition-shadow"
                   placeholder="Enter your password"
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
+                    if (e.key === "Enter") {
                       handleLogin();
                     }
                   }}
                 />
                 <button
                   type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center hover:bg-gray-50 rounded-r-xl transition-colors"
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? (
-                    <EyeOff size={18} className="text-gray-400" />
+                    <EyeOff size={18} className="text-[#808080]" />
                   ) : (
-                    <Eye size={18} className="text-gray-400" />
+                    <Eye size={18} className="text-[#808080]" />
                   )}
                 </button>
               </div>
             </div>
-            
+
             {/* Login Button */}
             <button
               type="button"
               disabled={isLoading}
               onClick={handleLogin}
-              className="w-full bg-[#0D21A1] hover:bg-[#0D21A1]/90 text-white font-medium py-3 px-4 rounded-lg flex items-center justify-center transition-colors"
+              className="w-full bg-[#0D21A1] hover:bg-[#0D21A1]/90 disabled:bg-[#808080] text-white font-medium py-3 px-4 rounded-xl flex items-center justify-center transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
             >
               {isLoading ? (
                 <Spinner />
@@ -222,19 +226,25 @@ const LoginPage = () => {
               )}
             </button>
           </div>
-          
+
           {/* Demo Account Info */}
-          <div className="mt-8 border-t border-gray-200 dark:border-gray-700 pt-6">
-            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Demo Accounts</h3>
+          <div className="mt-8 border-t border-gray-200 pt-6">
+            <h3 className="text-sm font-medium text-[#141414] mb-3">
+              Demo Accounts
+            </h3>
             <div className="space-y-3">
               <AccountInfo role="Admin" username="admin" password="admin123" />
-              <AccountInfo role="Manager" username="manager" password="manager123" />
+              <AccountInfo
+                role="Manager"
+                username="manager"
+                password="manager123"
+              />
               <AccountInfo role="Staff" username="staff" password="staff123" />
             </div>
           </div>
         </div>
-        
-        <div className="text-center mt-6 text-sm text-gray-500 dark:text-gray-400">
+
+        <div className="text-center mt-6 text-sm text-[#808080]">
           &copy; 2025 ShopDash. All rights reserved.
         </div>
       </div>
@@ -244,14 +254,14 @@ const LoginPage = () => {
 
 const RoleOption = ({ role, description, icon, onClick }: RoleOptionProps) => {
   return (
-    <div 
-      className="px-4 py-3 hover:bg-[#EEF0F2] dark:hover:bg-gray-700 cursor-pointer flex items-start transition-colors"
+    <div
+      className="px-4 py-3 hover:bg-gray-50 cursor-pointer flex items-start transition-colors border-b border-gray-100 last:border-b-0"
       onClick={onClick}
     >
       <div className="mr-3 mt-1">{icon}</div>
       <div>
-        <div className="font-medium dark:text-white">{role}</div>
-        <div className="text-xs text-gray-500 dark:text-gray-400">{description}</div>
+        <div className="font-medium text-[#141414]">{role}</div>
+        <div className="text-xs text-[#808080]">{description}</div>
       </div>
     </div>
   );
@@ -261,27 +271,29 @@ const AccountInfo = ({ role, username, password }: AccountInfoProps) => {
   const getRoleColor = () => {
     switch (role.toLowerCase()) {
       case "admin":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300";
+        return "bg-blue-50 text-[#0D21A1] border border-blue-200";
       case "manager":
-        return "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300";
+        return "bg-purple-50 text-purple-700 border border-purple-200";
       case "staff":
-        return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300";
+        return "bg-green-50 text-green-700 border border-green-200";
       default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300";
+        return "bg-gray-50 text-[#808080] border border-gray-200";
     }
   };
-  
+
   return (
-    <div className="bg-[#EEF0F2]/70 dark:bg-gray-700/50 rounded-lg p-3 flex items-center justify-between transition-colors">
+    <div className="bg-white/70 rounded-xl p-3 flex items-center justify-between transition-colors border border-gray-100 hover:shadow-sm">
       <div className="flex items-center">
-        <span className={`text-xs font-medium px-2 py-1 rounded-full ${getRoleColor()}`}>
+        <span
+          className={`text-xs font-medium px-3 py-1 rounded-full ${getRoleColor()}`}
+        >
           {role}
         </span>
-        <span className="ml-3 text-sm dark:text-white">
+        <span className="ml-3 text-sm font-medium text-[#141414]">
           {username}
         </span>
       </div>
-      <div className="text-sm text-gray-500 dark:text-gray-400">
+      <div className="text-sm text-[#808080] font-mono bg-gray-50 px-2 py-1 rounded">
         {password}
       </div>
     </div>
@@ -290,9 +302,25 @@ const AccountInfo = ({ role, username, password }: AccountInfoProps) => {
 
 const Spinner = () => {
   return (
-    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+    <svg
+      className="animate-spin h-5 w-5 text-white"
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+    >
+      <circle
+        className="opacity-25"
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        strokeWidth="4"
+      ></circle>
+      <path
+        className="opacity-75"
+        fill="currentColor"
+        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+      ></path>
     </svg>
   );
 };

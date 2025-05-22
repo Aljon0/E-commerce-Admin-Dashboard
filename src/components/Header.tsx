@@ -1,7 +1,16 @@
-import { Search, MessageSquare } from "lucide-react";
+import { MessageSquare, Search } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 import { Bell } from "./Icons";
 
 export const Header = () => {
+  const { logout, userRole } = useAuth();
+
+  // Get user initials from username (or you can modify this to use actual user data)
+  const getUserInitials = () => {
+    if (!userRole) return "US";
+    return userRole.substring(0, 2).toUpperCase();
+  };
+
   return (
     <div className="bg-white shadow-sm py-3 px-6 flex justify-between items-center">
       <div className="flex items-center rounded-lg bg-[#EEF0F2] p-2">
@@ -21,11 +30,23 @@ export const Header = () => {
         </button>
         <div className="flex items-center">
           <div className="h-10 w-10 rounded-full bg-[#0D21A1] flex items-center justify-center text-white font-medium">
-            JD
+            {getUserInitials()}
           </div>
           <div className="ml-3 hidden md:block">
-            <p className="text-sm font-medium">John Doe</p>
-            <p className="text-xs text-gray-500">Admin</p>
+            <p className="text-sm font-medium">
+              {userRole
+                ? userRole.charAt(0).toUpperCase() + userRole.slice(1)
+                : "User"}
+            </p>
+            <p className="text-xs text-gray-500">
+              {userRole === "admin"
+                ? "Administrator"
+                : userRole === "manager"
+                ? "Manager"
+                : userRole === "staff"
+                ? "Staff Member"
+                : "Role"}
+            </p>
           </div>
         </div>
       </div>
