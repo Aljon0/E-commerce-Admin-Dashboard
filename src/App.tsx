@@ -16,6 +16,8 @@ const Dashboard = lazy(() => import("./components/Dashboard"));
 const Products = lazy(() => import("./pages/Products"));
 const Customers = lazy(() => import("./pages/Customers"));
 const Orders = lazy(() => import("./pages/Orders"));
+const Admin = lazy(() => import("./pages/Admin"));
+const Settings = lazy(() => import("./pages/Settings"));
 
 // Loading fallback component
 const LoadingFallback = () => (
@@ -58,6 +60,8 @@ const AppLayout = () => {
               <Route path="/products" element={<Products />} />
               <Route path="/orders" element={<Orders />} />
               <Route path="/customers" element={<Customers />} />
+              <Route path="/admin" element={<Admin />} />
+              <Route path="/settings" element={<Settings />} />
             </Routes>
           </Suspense>
         </main>
